@@ -1,0 +1,78 @@
+---
+title: "prueba"
+
+editor: visual
+format: 
+  docx: 
+    reference-doc: plantilla.docx
+---
+
+## Summary
+
+## Introducction
+
+## 
+
+# Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+### Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+library(readxl)
+library(tidyverse)
+library(emmeans)
+library(ggeffects)
+library(glmmTMB)
+library(car)
+library(performance)
+library(multcomp)
+library(multcompView)
+frecuencia <- read_excel("frecuenciarelativaSINCALA.xlsx")
+summary(frecuencia)
+#tipo de datos de tus variables 
+str(frecuencia)
+frecuencia$Site=as.factor(frecuencia$Site)
+frecuencia$Treatment =as.factor(frecuencia$Treatment)
+modelo1 <- glmmTMB(Total ~ Site + Treatment +Site*Treatment+(1|sector), family = beta_family(), data = frecuencia)
+Anova(modelo1)
+modelo1 %>% 
+  emmeans(list(pairwise ~Site), type= "response")
+modelo1_emm_trat <- emmeans(modelo1, ~Site)
+cld(modelo1_emm_trat)
+
+#OTRA OPCION PARA VER LA INTERACCIÓN
+modelo1 %>% 
+  emmeans(list(pairwise ~Site * Treatment), type= "response")
+modelo1_emm_trat <- emmeans(modelo1, ~Site * Treatment)
+cld(modelo1_emm_trat)
+
+#PARA VER LA INTERACCIÓN PARTICIONANDO POR SITIO
+cld(modelo1_emm_trat, by = "Site")
+
+frecuencia %>% 
+  ggplot(aes(x= Site, y= Total)) +
+  geom_boxplot()+
+  theme_bw ()
+frecuencia %>% 
+  ggplot(aes(x= Treatment, y= Total)) +
+  geom_boxplot()+
+  theme_bw ()
+frecuencia %>% 
+  ggplot(aes(x= Treatment, y= Total,color= Treatment)) +
+  geom_boxplot()+
+  facet_wrap(~Site)+
+  theme_bw ()
+
+
+```
